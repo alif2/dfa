@@ -1,0 +1,2 @@
+# dfa
+Automaton class project
