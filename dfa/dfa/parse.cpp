@@ -7,7 +7,9 @@
 
 using namespace std;
 
+// Split string by token
 vector<string> parse::split(string str, char token) {
+	// Ignore inline comments
 	int comment = str.find('#');
 	if (comment >= 0) {
 		str = str.substr(0, comment);
@@ -32,7 +34,9 @@ vector<string> parse::split(string str, char token) {
 	return vec;
 }
 
+// Split transition list (delta) string
 vector<string> parse::split_delta(string str) {
+	// Ignore inline comments
 	int comment = str.find('#');
 	if (comment >= 0) {
 		str = str.substr(0, comment);
@@ -66,6 +70,7 @@ vector<string> parse::split_delta(string str) {
 	return vec;
 }
 
+// Read .dfa file input
 void parse::read_file(string fname, vector<string> &state, vector<string> &lang, vector<string> &acpt, vector<string> &delta, string &init) {
 	ifstream file;
 	file.open(fname);
@@ -73,6 +78,7 @@ void parse::read_file(string fname, vector<string> &state, vector<string> &lang,
 	string line;
 	if (file.is_open()) {
 		while (getline(file, line)) {
+			// Ignore commented lines
 			if (line.at(0) == '#') continue;
 
 			else if (line.substr(0, 6).compare("states") == 0) {
@@ -98,4 +104,69 @@ void parse::read_file(string fname, vector<string> &state, vector<string> &lang,
 
 		file.close();
 	}
+}
+
+/* Create a DFA from tokenized string vectors
+   *head contains the start state
+   The returned vector contains a pointer to all the states.
+   This vector can be safely deleted without removing the internal references between states and should be in order to avoid memory leaks
+*/
+vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<string> lang, vector<string> acpt, vector<string> delta, string init, struct parse::state *&head) {
+	vector<struct parse::state*> dfa;
+	head = NULL;
+
+	// Create set of all states. All must be created before building transitions
+	for (unsigned int i = 0; i < state.size(); i++) {
+		struct parse::state *st = new struct parse::state;
+		st->name = state.at(i);
+		st->accept = false;
+
+		// Set the start state
+		if (head == NULL) {
+			if (st->name.compare(init) == 0) {
+				head = st;
+			}
+		}
+
+		for (unsigned int j = 0; j < acpt.size(); j++) {
+			if (acpt.at(j).compare(st->name) == 0) {
+				st->accept = true;
+				break;
+			}
+		}
+
+		dfa.push_back(st);
+	}
+
+	// Create state transitions
+	for (unsigned int i = 0; i < delta.size(); i += 3) {
+		string srtst = delta.at(i);
+		string trans = delta.at(i + 1);
+		string endst = delta.at(i + 2);
+
+		for (unsigned int j = 0; j < dfa.size(); j++) {
+			if (dfa.at(j)->name.compare(srtst) == 0) {
+				struct parse::trns trst;
+				trst.trch = trans.at(0);
+
+				// Shortcut for self-loops to avoid triple looping
+				if (srtst.compare(endst) == 0) {
+					trst.trste = dfa.at(j);
+				}
+
+				else {
+					for (unsigned int k = 0; k < dfa.size(); k++) {
+						if (dfa.at(k)->name.compare(endst) == 0) {
+							trst.trste = dfa.at(k);
+							break;
+						}
+					}
+				}
+
+				dfa.at(j)->trns.push_back(trst);
+			}
+		}
+	}
+
+	return dfa;
 }
