@@ -18,6 +18,9 @@
     <None Include="test.dfa">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="test2.dfa">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dfa.cpp">

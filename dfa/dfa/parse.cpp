@@ -170,3 +170,87 @@ vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<strin
 
 	return dfa;
 }
+
+void parse::minimize_dfa(vector<struct parse::state*> &dfa) {
+	vector<pair<struct parse::state*, struct parse::state*>> pairs;
+	vector<pair<struct parse::state*, struct parse::state*>> remaining;
+
+	// Create set of pairs of all states
+	for (unsigned int i = 0; i < dfa.size(); i++) {
+		for (unsigned int j = i + 1; j < dfa.size(); j++) {
+			pairs.push_back(pair<struct parse::state*, struct parse::state*>(dfa.at(i), dfa.at(j)));
+
+			// Ignore pairs of accept-not accept states, since we can't merge them
+			if ((dfa.at(i)->accept && dfa.at(j)->accept || (!dfa.at(i)->accept && !dfa.at(j)->accept))) {
+				remaining.push_back(pair<struct parse::state*, struct parse::state*>(dfa.at(i), dfa.at(j)));
+			}
+		}
+	}
+
+	minimize(pairs, remaining);
+}
+
+void parse::minimize(vector<pair<struct parse::state*, struct parse::state*>> &pairs, vector<pair<struct parse::state*, struct parse::state*>> &remaining) {
+	bool modified = false;
+
+	// For each unmarked pair
+	for (unsigned int i = 0; i < remaining.size(); i++) {
+		bool deleted = false;
+		struct parse::state* first = remaining.at(i).first;
+		struct parse::state* second = remaining.at(i).second;
+
+		// For each character in the language for the first element
+		for (unsigned int j = 0; j < first->trns.size(); j++) {
+			char ftrch = first->trns.at(j).trch;
+
+			// That matches the character in the language of the second element
+			for (unsigned int k = 0; k < second->trns.size(); k++) {
+				char strch = second->trns.at(k).trch;
+
+				// If the pair pointed to by the transition function is marked (not in vector), mark (remove) the originating pair
+				if (ftrch == strch) {
+					struct parse::state* ftrst = first->trns.at(j).trste;
+					struct parse::state* ltrst = second->trns.at(k).trste;
+					
+					bool found = false;
+					for (unsigned int m = 0; m < pairs.size(); m++) {
+						if ((pairs.at(m).first == ftrst && pairs.at(m).second == ltrst) || (pairs.at(m).first == ltrst && pairs.at(m).second == ftrst)) {
+							found = true;
+							break;
+						}
+					}
+
+					if (found) {
+						for (unsigned int m = 0; m < remaining.size(); m++) {
+							if ((remaining.at(m).first == ftrst && remaining.at(m).second == ltrst) || (remaining.at(m).first == ltrst && remaining.at(m).second == ftrst)) {
+								found = false;
+							}
+						}
+
+						if (found) {
+							remaining.erase(remaining.begin() + i);
+							deleted = true;
+							modified = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if (deleted) {
+				i--;
+				break;
+			}
+		}
+	}
+
+	if (modified) {
+		parse::minimize(pairs, remaining);
+	}
+}
+
+void parse::merge(vector<pair<struct parse::state*, struct parse::state*>> &pairs, vector<pair<struct parse::state*, struct parse::state*>> &remaining) {
+	for (unsigned int i = 0; i < remaining.size(); i++) {
+
+	}
+}

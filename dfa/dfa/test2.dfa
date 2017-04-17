@@ -1,0 +1,14 @@
+# 
+# 
+# 
+# 
+# 
+states: A; B; C; D; E; F; G; H
+input_alphabet: 0; 1
+start_state: A # no last bit when we start
+accept_states: F; G # accept as long as the last three bits weren’t 000
+# 
+# 
+# 
+#everything on one line
+delta: A,1 -> B; A,0 -> H; B,1 -> A; B,0 -> H; C,0 -> E; C,1 -> F; D,0 -> E; D,1 -> F; E,0 -> F; E,1 -> G; F,0 -> F; F,1 -> F; G,0 -> G; G,1 -> F; H,0 -> C; H,1 -> C

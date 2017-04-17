@@ -42,5 +42,7 @@ int main(int argc, char **argv) {
 	parse::read_file(fname, state, lang, acpt, delta, init);
 	vector<parse::state*> dfa = parse::build_dfa(state, lang, acpt, delta, init, head);
 
+	parse::minimize_dfa(dfa);
+
 	run_dfa(dfa.at(0), input) ? cout << "Yes\n" : cout << "No\n";
 }
