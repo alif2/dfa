@@ -1,13 +1,11 @@
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <algorithm>
 #include <vector>
 #include "parse.h"
 
 using namespace std;
 
+/* Execute the DFA by traversing paths for matched input
+   Fails if no paths are available when has remaining input
+*/
 bool run_dfa(struct parse::state *head, string input) {
 	for (unsigned int i = 0; i < input.length(); i++) {
 		for (unsigned int j = 0; j < head->trns.size(); j++) {
@@ -17,7 +15,7 @@ bool run_dfa(struct parse::state *head, string input) {
 			}
 
 			if (j >= head->trns.size() - 1) {
-				cout << "Could not complete DFA\n";
+				printf("Could not complete DFA\n");
 				return false;
 			}
 		}
@@ -28,7 +26,7 @@ bool run_dfa(struct parse::state *head, string input) {
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
-		cout << "Not enough arguments\n";
+		printf("Not enough arguments\n");
 		exit(1);
 	}
 
@@ -42,7 +40,7 @@ int main(int argc, char **argv) {
 	parse::read_file(fname, state, lang, acpt, delta, init);
 	vector<parse::state*> dfa = parse::build_dfa(state, lang, acpt, delta, init, head);
 
-	parse::minimize_dfa(dfa);
+	parse::minimize_dfa(dfa, head);
 
-	run_dfa(dfa.at(0), input) ? cout << "Yes\n" : cout << "No\n";
+	run_dfa(head, input) ? printf("Yes\n") : printf("No\n");
 }

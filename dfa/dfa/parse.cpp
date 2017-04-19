@@ -7,7 +7,7 @@
 
 using namespace std;
 
-// Split string by token
+/* Split string by token */
 vector<string> parse::split(string str, char token) {
 	// Ignore inline comments
 	int comment = str.find('#');
@@ -21,6 +21,7 @@ vector<string> parse::split(string str, char token) {
 	vector<string> vec;
 	unsigned int i = str.find(':') + 1;
 
+	// Find token and split string
 	while (i < str.length()) {
 		int loc = str.find(token, i);
 		if (loc < 0) {
@@ -34,7 +35,7 @@ vector<string> parse::split(string str, char token) {
 	return vec;
 }
 
-// Split transition list (delta) string
+/* Split transition list (delta) string */
 vector<string> parse::split_delta(string str) {
 	// Ignore inline comments
 	int comment = str.find('#');
@@ -45,6 +46,7 @@ vector<string> parse::split_delta(string str) {
 	// Remove whitespace
 	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
 
+	// Split delta string on delta tokens (, - ;)
 	vector<string> vec;
 	unsigned int i = str.find(':') + 1;
 	while (i < str.length()) {
@@ -70,7 +72,7 @@ vector<string> parse::split_delta(string str) {
 	return vec;
 }
 
-// Read .dfa file input
+/* Read .dfa file input into corresponding vectors */
 void parse::read_file(string fname, vector<string> &state, vector<string> &lang, vector<string> &acpt, vector<string> &delta, string &init) {
 	ifstream file;
 	file.open(fname);
@@ -104,10 +106,15 @@ void parse::read_file(string fname, vector<string> &state, vector<string> &lang,
 
 		file.close();
 	}
+
+	else {
+		printf("Error: Could not open DFA file\n");
+		exit(1);
+	}
 }
 
 /* Create a DFA from tokenized string vectors
-   *head contains the start state
+   *head points to the start state
    The returned vector contains a pointer to all the states.
    This vector can be safely deleted without removing the internal references between states and should be in order to avoid memory leaks
 */
@@ -141,19 +148,21 @@ vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<strin
 	// Create state transitions
 	for (unsigned int i = 0; i < delta.size(); i += 3) {
 		string srtst = delta.at(i);
-		string trans = delta.at(i + 1);
+		char transc = delta.at(i + 1).at(0);
 		string endst = delta.at(i + 2);
 
+		// Locate first node
 		for (unsigned int j = 0; j < dfa.size(); j++) {
 			if (dfa.at(j)->name.compare(srtst) == 0) {
 				struct parse::trns trst;
-				trst.trch = trans.at(0);
+				trst.trch = transc;
 
-				// Shortcut for self-loops to avoid triple looping
+				// Shortcut for self-loops
 				if (srtst.compare(endst) == 0) {
 					trst.trste = dfa.at(j);
 				}
-
+				
+				// Locate node to transition to
 				else {
 					for (unsigned int k = 0; k < dfa.size(); k++) {
 						if (dfa.at(k)->name.compare(endst) == 0) {
@@ -164,6 +173,7 @@ vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<strin
 				}
 
 				dfa.at(j)->trns.push_back(trst);
+				break;
 			}
 		}
 	}
@@ -171,7 +181,8 @@ vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<strin
 	return dfa;
 }
 
-void parse::minimize_dfa(vector<struct parse::state*> &dfa) {
+/* Transform a DFA into a minimal DFA */
+void parse::minimize_dfa(vector<struct parse::state*> &dfa, parse::state *&head) {
 	vector<pair<struct parse::state*, struct parse::state*>> pairs;
 	vector<pair<struct parse::state*, struct parse::state*>> remaining;
 
@@ -188,8 +199,10 @@ void parse::minimize_dfa(vector<struct parse::state*> &dfa) {
 	}
 
 	minimize(pairs, remaining);
+	merge(dfa, remaining, head);
 }
 
+/* Determine what DFA states must be minimized in order to create a minimal DFA */
 void parse::minimize(vector<pair<struct parse::state*, struct parse::state*>> &pairs, vector<pair<struct parse::state*, struct parse::state*>> &remaining) {
 	bool modified = false;
 
@@ -213,6 +226,8 @@ void parse::minimize(vector<pair<struct parse::state*, struct parse::state*>> &p
 					struct parse::state* ltrst = second->trns.at(k).trste;
 					
 					bool found = false;
+
+					// Determine if the pair (order-agnostic) is in the set of possible pairs
 					for (unsigned int m = 0; m < pairs.size(); m++) {
 						if ((pairs.at(m).first == ftrst && pairs.at(m).second == ltrst) || (pairs.at(m).first == ltrst && pairs.at(m).second == ftrst)) {
 							found = true;
@@ -220,6 +235,7 @@ void parse::minimize(vector<pair<struct parse::state*, struct parse::state*>> &p
 						}
 					}
 
+					// Determine if the pair is unmarked (in the vector). If so, remove (mark) it
 					if (found) {
 						for (unsigned int m = 0; m < remaining.size(); m++) {
 							if ((remaining.at(m).first == ftrst && remaining.at(m).second == ltrst) || (remaining.at(m).first == ltrst && remaining.at(m).second == ftrst)) {
@@ -249,8 +265,63 @@ void parse::minimize(vector<pair<struct parse::state*, struct parse::state*>> &p
 	}
 }
 
-void parse::merge(vector<pair<struct parse::state*, struct parse::state*>> &pairs, vector<pair<struct parse::state*, struct parse::state*>> &remaining) {
+/* Merge DFA states. Reset head if head node merged */
+void parse::merge(vector<struct parse::state*> &dfa, vector<pair<struct parse::state*, struct parse::state*>> &remaining, parse::state *&head) {
 	for (unsigned int i = 0; i < remaining.size(); i++) {
+		struct parse::state *first = remaining.at(i).first;
+		struct parse::state *second = remaining.at(i).second;
 
+		struct parse::state *merged = new parse::state;
+		merged->accept = first->accept;
+		merged->name = first->name + "/" + second->name;
+		
+		// Remap transitions
+		vector<trns> trans;
+		for (unsigned int j = 0; j < first->trns.size(); j++) {
+			struct trns ftrns = first->trns.at(j);
+
+			trns ntrans;
+			ntrans.trch = ftrns.trch;
+
+			if (ftrns.trste == first || ftrns.trste == second) {
+				ntrans.trste = merged;
+			}
+
+			else {
+				ntrans.trste = ftrns.trste;
+			}
+
+			trans.push_back(ntrans);
+		}
+
+		merged->trns = trans;
+
+		if (head == first || head == second) {
+			head = merged;
+		}
+
+		dfa.push_back(merged);
+
+		// Remap any pointers pointing to pre-merge nodes
+		for (unsigned int j = 0; j < dfa.size(); j++) {
+			for (unsigned int k = 0; k < dfa.at(i)->trns.size(); k++) {
+				trns trns = dfa.at(i)->trns.at(k);
+				
+				if (trns.trste == first || trns.trste == second) {
+					trns.trste = merged;
+				}
+			}
+		}
+
+		// Cleanup
+		for (unsigned int j = 0; j < dfa.size(); j++) {
+			if (dfa.at(j) == first || dfa.at(j) == second) {
+				dfa.erase(dfa.begin() + j);
+				j--;
+			}
+		}
+
+		delete first;
+		delete second;
 	}
 }
