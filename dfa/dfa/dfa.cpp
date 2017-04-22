@@ -1,6 +1,8 @@
 #include <vector>
 #include <stack>
 #include <tuple>
+#include <iostream>
+#include <string>
 #include "parse.h"
 
 using namespace std;
@@ -17,7 +19,7 @@ bool run_dfa(struct parse::state *head, string input) {
 			}
 
 			if (j >= head->trns.size() - 1) {
-				printf("Could not complete DFA\n");
+				cout << "Could not complete DFA\n";
 				return false;
 			}
 		}
@@ -49,7 +51,6 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 
 		parse::state *node2 = s2.top();
 		s2.pop();
-
 
 		for (unsigned int i = 0; i < node->trns.size(); i++) {
 			parse::state *vnode = node->trns.at(i).trste;
@@ -86,18 +87,20 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 			}
 
 			// Triggered if DFA structures differ
-			if (nvisited && !nvisited2 || !nvisited && nvisited2) {
+			if (nvisited != nvisited2 || node->accept != node2->accept) {
 				path.push_back(make_tuple(vnode, node, vchar));
 				path2.push_back(make_tuple(vnode2, node2, vchar2));
 
+				// Backtrace input on path
 				string input;
 				tuple<parse::state*, parse::state*, char> current = path.at(path.size() - 1);
-				while (get<0>(current) != head) {
-					input += get<2>(current);
+				while (path.size() > 1) {
+					input = get<2>(current) + input;
 
 					for (unsigned int k = 0; k < path.size(); k++) {
 						if (get<0>(path.at(k)) == get<1>(current)) {
 							current = path.at(k);
+							path.erase(path.begin() + k);
 						}
 					}
 				}
@@ -111,8 +114,6 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 				visited.push_back(vnode);
 				path.push_back(make_tuple(vnode, node, vchar));
 			}
-			
-
 
 			if (!nvisited2) {
 				s2.push(vnode2);
@@ -127,7 +128,7 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
-		printf("Not enough arguments\n");
+		cout << "Not enough arguments\n";
 		exit(1);
 	}
 
@@ -149,15 +150,15 @@ int main(int argc, char **argv) {
 
 		string diff = compare_dfa(head, head2);
 		if (diff.size() > 0) {
-			printf("No\n");
-			printf("%s\n", diff);
+			cout << "No\n";
+			cout << diff << "\n";
 		}
 		else {
-			printf("Yes\n");
+			cout << "Yes\n";
 		}
 	}
 
 	else {
-		run_dfa(head, input) ? printf("Yes\n") : printf("No\n");
+		run_dfa(head, input) ? cout << "Yes\n" : cout << "No\n";
 	}
 }

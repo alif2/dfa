@@ -113,6 +113,7 @@
   <ItemGroup>
     <None Include="test.dfa" />
     <None Include="test2.dfa" />
+    <None Include="test3.dfa" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dfa.cpp" />
