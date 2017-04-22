@@ -304,11 +304,11 @@ void parse::merge(vector<struct parse::state*> &dfa, vector<pair<struct parse::s
 
 		// Remap any pointers pointing to pre-merge nodes
 		for (unsigned int j = 0; j < dfa.size(); j++) {
-			for (unsigned int k = 0; k < dfa.at(i)->trns.size(); k++) {
-				trns trns = dfa.at(i)->trns.at(k);
+			for (unsigned int k = 0; k < dfa.at(j)->trns.size(); k++) {
+				trns trns = dfa.at(j)->trns.at(k);
 				
 				if (trns.trste == first || trns.trste == second) {
-					trns.trste = merged;
+					dfa.at(j)->trns.at(k).trste = merged;
 				}
 			}
 		}
