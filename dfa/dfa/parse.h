@@ -23,6 +23,6 @@ public:
 	static void minimize_dfa(std::vector<struct state*> &dfa, parse::state *&head);
 
 private:
-	static void parse::minimize(std::vector<std::pair<struct parse::state*, struct parse::state*>> &pairs, std::vector<std::pair<struct parse::state*, struct parse::state*>> &remaining);
+	static void minimize(std::vector<std::pair<struct parse::state*, struct parse::state*>> &pairs, std::vector<std::pair<struct parse::state*, struct parse::state*>> &remaining);
 	static void merge(std::vector<struct parse::state*> &dfa, std::vector<std::pair<struct parse::state*, struct parse::state*>> &remaining, parse::state *&head);
 };
