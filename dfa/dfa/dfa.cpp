@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 	vector<parse::state*> dfa = parse::build_dfa(state, lang, acpt, delta, init, head);
 	parse::minimize_dfa(dfa, head);
 
-	if (input.substr(input.length() - 4, 4).compare(".dfa") == 0) {
+	if (input.length() > 3 && input.substr(input.length() - 4, 4).compare(".dfa") == 0) {
 		parse::read_file(input, state, lang, acpt, delta, init);
 		vector<parse::state*> dfa2 = parse::build_dfa(state, lang, acpt, delta, init, head2);
 		parse::minimize_dfa(dfa2, head2);
