@@ -1,0 +1,14 @@
+# 
+# 
+# 
+# 
+# 
+states: A; B; C; D;
+input_alphabet: 0; 1
+start_state: A 
+accept_states: E
+# 
+# 
+# 
+#everything on one line
+delta: A,0 -> B; A,1 -> C; B,0 -> D; B,1 -> D; C,1 -> D; C,0 -> D; D,0 -> E; D,1 -> E

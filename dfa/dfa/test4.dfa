@@ -1,0 +1,14 @@
+# 
+# 
+# 
+# 
+# 
+states: q0; q1; q2; q3; q4; q5
+input_alphabet: a; b
+start_state: q0 
+accept_states: q5
+# 
+# 
+# 
+#everything on one line
+delta: q0,a -> q2; q0,b -> q1; q1,a -> q3; q1,b -> q0; q2,a -> q4; q2,b -> q3; q3,a -> q5; q3,b -> q2; q4,a -> a4; q4,b -> q5; q5,a -> q5; q5,b -> q4

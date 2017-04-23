@@ -75,6 +75,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <ShowIncludes>true</ShowIncludes>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -114,6 +115,7 @@
     <None Include="test.dfa" />
     <None Include="test2.dfa" />
     <None Include="test3.dfa" />
+    <None Include="test4.dfa" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dfa.cpp" />

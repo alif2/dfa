@@ -24,6 +24,9 @@
     <None Include="test3.dfa">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="test4.dfa">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dfa.cpp">
