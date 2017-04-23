@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <vector>
 #include <stack>
 #include <tuple>
@@ -58,7 +59,7 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 			bool nvisited = false;
 
 			parse::state *vnode2 = NULL;
-			char vchar2 = NULL;
+			char vchar2;
 			bool nvisited2 = false;
 
 			// Look for matching node in second DFA

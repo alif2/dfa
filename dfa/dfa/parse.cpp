@@ -16,7 +16,7 @@ vector<string> parse::split(string str, char token) {
 	}
 
 	// Remove whitespace
-	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
+	str.erase(remove_if(str.begin(), str.end(), ::isspace), str.end());
 
 	vector<string> vec;
 	unsigned int i = str.find(':') + 1;
@@ -44,7 +44,7 @@ vector<string> parse::split_delta(string str) {
 	}
 
 	// Remove whitespace
-	str.erase(remove_if(str.begin(), str.end(), isspace), str.end());
+	str.erase(remove_if(str.begin(), str.end(), ::isspace), str.end());
 
 	// Split delta string on delta tokens (, - ;)
 	vector<string> vec;
@@ -124,7 +124,7 @@ vector<struct parse::state*> parse::build_dfa(vector<string> state, vector<strin
 
 	// Create set of all states. All must be created before building transitions
 	for (unsigned int i = 0; i < state.size(); i++) {
-		struct parse::state *st = new struct parse::state;
+		struct parse::state *st = new struct parse::state();
 		st->name = state.at(i);
 		st->accept = false;
 
