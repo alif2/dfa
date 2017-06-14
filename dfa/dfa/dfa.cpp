@@ -1,9 +1,10 @@
 #include <cstdlib>
-#include <vector>
-#include <stack>
-#include <tuple>
 #include <iostream>
+#include <stack>
 #include <string>
+#include <tuple>
+#include <vector>
+
 #include "parse.h"
 
 using namespace std;
@@ -127,6 +128,10 @@ string compare_dfa(parse::state *head, parse::state *head2) {
 	return "";
 }
 
+/*
+    If input is a DFA and a string, determine if the DFA acceps the string.
+    If input is 2 DFAs, determine if they are equivalent
+*/
 int main(int argc, char **argv) {
 	if (argc < 3) {
 		cout << "Not enough arguments\n";
@@ -140,12 +145,15 @@ int main(int argc, char **argv) {
 	parse::state *head = NULL, *head2 = NULL;
 	vector<string> state, lang, acpt, delta;
 	
+    // Parse the first DFA
 	parse::read_file(fname, state, lang, acpt, delta, init);
 	vector<parse::state*> dfa = parse::build_dfa(state, lang, acpt, delta, init, head);
 	parse::minimize_dfa(dfa, head);
 
+    // Compare 2 DFAs for equivalence
 	if (input.length() > 3 && input.substr(input.length() - 4, 4).compare(".dfa") == 0) {
-		parse::read_file(input, state, lang, acpt, delta, init);
+		// Parse the second DFA
+        parse::read_file(input, state, lang, acpt, delta, init);
 		vector<parse::state*> dfa2 = parse::build_dfa(state, lang, acpt, delta, init, head2);
 		parse::minimize_dfa(dfa2, head2);
 
@@ -159,6 +167,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
+    // Determine if DFA accepts string
 	else {
 		run_dfa(head, input) ? cout << "Yes\n" : cout << "No\n";
 	}

@@ -1,11 +1,17 @@
-#include <stdlib.h>
-#include <fstream>
-#include <string>
 #include <algorithm>
+#include <fstream>
+#include <stdlib.h>
+#include <string>
 #include <vector>
+
 #include "parse.h"
 
 using namespace std;
+
+/*
+    Parse.cpp contains functions for parsing a .dfa file and creating a linked list of transversable states
+    Also includes functions for minimizing a DFA
+*/
 
 /* Split string by token */
 vector<string> parse::split(string str, char token) {
